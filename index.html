@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Mission: Practice 10</title>
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&display=swap" rel="stylesheet">
+
+    </head>
+<body>
+
+<div class="container">
+    <div id="quiz-screen">
+        <h1>🇬🇧 English Mission 10</h1>
+        <div class="status-bar">
+            <span>ข้อที่: <span id="current-count">1</span>/10</span>
+            <span>คะแนน: <span id="score">0</span></span>
+        </div>
+        
+        <div class="question-box" id="question-text">Loading...</div>
+        
+        <div class="options-container" id="options-box"></div>
+        
+        <div id="explanation-box" class="explanation"></div>
+        
+        <button id="next-btn" class="next-btn" onclick="nextQuestion()">ถัดไป (Next)</button>
+    </div>
+
+    <div id="result-screen">
+        <h1>จบภารกิจ! (Finished)</h1>
+        <p style="font-size: 18px;">คะแนนของคุณคือ</p>
+        <div style="font-size: 48px; font-weight: bold; color: var(--primary); margin: 20px 0;">
+            <span id="final-score">0</span> / 10
+        </div>
+        <button class="next-btn" style="display: block;" onclick="location.reload()">ลองอีกครั้ง (Try Again)</button>
+    </div>
+</div>
+
+<script src="questions.js"></script>
+
+<script>
+    let selectedQuestions = [];
+    let currentIndex = 0;
+    let score = 0;
+
+    // クイズの開始処理
+    function startQuiz() {
+        // データが読み込めていない場合のチェック
+        if (typeof allQuestions === 'undefined') {
+            document.getElementById('question-text').innerText = "Error: questions.js not found. Please check the file name.";
+            return;
+        }
+        
+        // 100問からランダムに10問選出
+        selectedQuestions = [...allQuestions]
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 10);
+        
+        // 最初の問題を表示
+        renderQuestion();
+    }
+
+    // 問題を画面に描画する処理
+    function renderQuestion() {
+        const q = selectedQuestions[currentIndex];
+        document.getElementById("current-count").innerText = currentIndex + 1;
+        document.getElementById("question-text").innerText = q.question;
+        
+        const optionsBox = document.getElementById("options-box");
+        const expBox = document.getElementById("explanation-box");
+        const nextBtn = document.getElementById("next-btn");
+
+        // 表示のリセット
+        optionsBox.innerHTML = "";
+        expBox.style.display = "none";
+        nextBtn.style.display = "none";
+
+        // 選択肢ボタンの生成
+        q.options.forEach((opt, index) => {
+            const btn = document.createElement("button");
+            btn.className = "option-btn";
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsBox.appendChild(btn);
+        });
+    }
+
+    // 正誤判定処理
+    function checkAnswer(selectedIndex, clickedBtn) {
+        const q = selectedQuestions[currentIndex];
+        const expBox = document.getElementById("explanation-box");
+        const nextBtn = document.getElementById("next-btn");
+        const allBtns = document.querySelectorAll(".option-btn");
+
+        // 全ボタンを無効化（二度押し防止）
+        allBtns.forEach(btn => btn.disabled = true);
+
+        if (selectedIndex === q.answer) {
+            score++;
+            document.getElementById("score").innerText = score;
+            expBox.innerHTML = "<strong>ถูกต้อง! ✨ (Correct)</strong><br>" + q.explanation;
+            expBox.className = "explanation correct-style";
+        } else {
+            expBox.innerHTML = "<strong>ผิดนะ... ❌ (Wrong)</strong><br>" + q.explanation;
+            expBox.className = "explanation incorrect-style";
+        }
+
+        expBox.style.display = "block";
+        nextBtn.style.display = "block";
+    }
+
+    // 次の問題へ進む処理
+    function nextQuestion() {
+        currentIndex++;
+        if (currentIndex < 10) {
+            renderQuestion();
+        } else {
+            showResult();
+        }
+    }
+
+    // 結果表示処理
+    function showResult() {
+        document.getElementById("quiz-screen").style.display = "none";
+        document.getElementById("result-screen").style.display = "block";
+        document.getElementById("final-score").innerText = score;
+    }
+
+    // 画面が読み込まれたら開始
+    window.onload = startQuiz;
+</script>
+
+</body>
+</html>
